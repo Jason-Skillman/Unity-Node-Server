@@ -42,7 +42,7 @@ io.on('connection', function(socket) {
         clients.pop(clientId)
     })
 
-    //Called when any ...
+    //Called when any client moves on the server
     socket.on('move', function(data) {
         console.log('Player is moving', JSON.stringify(data))
         data.id = clientId;

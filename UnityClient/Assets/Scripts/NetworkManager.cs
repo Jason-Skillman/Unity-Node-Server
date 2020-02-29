@@ -13,14 +13,15 @@ public class NetworkManager : MonoBehaviour {
     public GameObject otherClientPrefab;
     public Transform playerSpawnPos;
 
-    //This client's player game object
-    private GameObject clientPlayer;
-
-    //All clients connected
+    //All clients connected on server
     private Dictionary<string, GameObject> clients;
-
     private bool flagConnectedOnce;
 
+    //This client's player game object
+    public GameObject ClientPlayer {
+        get;
+        private set;
+    }
 
     public bool HasConnected {
         get;
@@ -42,7 +43,11 @@ public class NetworkManager : MonoBehaviour {
         socket.On("open", OnConnect);
         socket.On("connectInitialize", OnConnectInitialize);
         socket.On("clientConnect", OnClientConnect);
-        socket.On("move", OnClientMove);
+        //socket.On("move", OnClientMove);
+    }
+
+    void OnDestroy() {
+        StopConnection();
     }
 
     /// <summary>
@@ -66,8 +71,8 @@ public class NetworkManager : MonoBehaviour {
     /// </summary>
     /// <param name="obj"></param>
     private void OnConnectInitialize(SocketIOEvent obj) {
-        clientPlayer = Instantiate(clientPrefab);
-        clientPlayer.transform.position = playerSpawnPos.position;
+        ClientPlayer = Instantiate(clientPrefab);
+        ClientPlayer.transform.position = playerSpawnPos.position;
     }
 
     /// <summary>
@@ -89,15 +94,13 @@ public class NetworkManager : MonoBehaviour {
     /// </summary>
     /// <param name="obj"></param>
     private void OnClientMove(SocketIOEvent obj) {
-        Debug.Log("Network player is moving " + obj.data);
-
         string id = obj.data["id"].ToString();
-        //Debug.Log("Player Id moving: " + id);
+        Debug.Log("Player " + id + " is moving");
 
-        GameObject player = clients[id];
-        //Vector3 pos = new Vector3(GetFloatFromJson(obj.data, "x"), 0, GetFloatFromJson(obj.data, "z"));
-        //NaviagatePos navigatePos = player.GetComponent<NaviagatePos>();
-        //navigatePos.NavigateTo(pos);
+        //Get the game object of the moving player
+        GameObject gameObjectPlayer = clients[id];
+        Player player = gameObjectPlayer.GetComponent<Player>();
+        player.MoveTo(JsonToVector3(obj.data));
     }
 
     /// <summary>
@@ -112,7 +115,7 @@ public class NetworkManager : MonoBehaviour {
     /// <summary>
     /// Starts the socket.io connection with the server
     /// </summary>
-    public void StartServer() {
+    public void StartConnection() {
         //Has the connection already been started
         if(HasConnected) {
             Debug.Log("Server connection already started");
@@ -124,6 +127,14 @@ public class NetworkManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// Stops the socket.io connection with the server
+    /// </summary>
+    public void StopConnection() {
+        HasConnected = false;
+        socket.Close();
+    }
+
+    /// <summary>
     /// Moves the player on the server
     /// </summary>
     /// <param name="pos">The new position of the player</param>
@@ -131,9 +142,21 @@ public class NetworkManager : MonoBehaviour {
         socket.Emit("move", VectorToJson(pos));
     }
 
-
+    /// <summary>
+    /// Converts a vector3 position to json
+    /// </summary>
+    /// <param name="vector">The position to convert</param>
+    /// <returns>The json object</returns>
     public static JSONObject VectorToJson(Vector3 vector) {
         return new JSONObject(string.Format(@"{{""x"":""{0}"",""y"":""{1}"",""z"":""{2}""}}", vector.x, vector.y, vector.z));
+    }
+
+    public static Vector3 JsonToVector3(JSONObject json) {
+        float x = float.Parse(json["x"].ToString().Replace("\"", ""));
+        float y = float.Parse(json["y"].ToString().Replace("\"", ""));
+        float z = float.Parse(json["z"].ToString().Replace("\"", ""));
+        Debug.Log("x: " + x + ", z: " + z);
+        return new Vector3(x, 0, z);
     }
 
 }
