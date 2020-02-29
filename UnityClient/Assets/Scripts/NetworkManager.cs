@@ -9,6 +9,13 @@ public class NetworkManager : MonoBehaviour {
 
     private static SocketIOComponent socket;
 
+    public GameObject clientPrefab;
+    public GameObject otherClientPrefab;
+    public Transform playerSpawnPos;
+
+    //This client's player game object
+    private GameObject clientPlayer;
+
 
     public bool HasConnected {
         get;
@@ -26,15 +33,42 @@ public class NetworkManager : MonoBehaviour {
     }
 
     void Start() {
-        socket.On("open", OnConnected);
+        socket.On("open", OnConnect);
+        socket.On("connectInitialize", OnConnectInitialize);
+        //socket.On("clientConnected", OnClientConnected);
     }
 
     /// <summary>
-    /// Called when this client first connects to the server
+    /// Called when this client has connected to the server
+    /// Note: Put any initializing in the OnConnectInitialize instead
     /// </summary>
     /// <param name="obj"></param>
-    private void OnConnected(SocketIOEvent obj) {
+    private void OnConnect(SocketIOEvent obj) {
         Debug.Log("Client connected to server");
+
+        //Tell the server that we have connected
+        socket.Emit("connected");
+    }
+
+    /// <summary>
+    /// Called by the server after OnConnected
+    /// </summary>
+    /// <param name="obj"></param>
+    private void OnConnectInitialize(SocketIOEvent obj) {
+        clientPlayer = Instantiate(clientPrefab);
+        clientPlayer.transform.position = playerSpawnPos.position;
+    }
+
+    /// <summary>
+    /// Called when another client has connected to the server
+    /// </summary>
+    /// <param name="obj"></param>
+    private void OnClientConnected(SocketIOEvent obj) {
+        /*GameObject player = Instantiate(playerPrefab);
+        players.Add(obj.data["id"].ToString(), player);
+
+        //Debug.Log("Player id: " + obj.data["id"]);
+        Debug.Log("Current player count: " + players.Count);*/
     }
 
     /// <summary>
