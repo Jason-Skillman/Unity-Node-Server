@@ -13,6 +13,23 @@ io.on('connection', function(socket) {
 
 
 
+    //Notify all other clients that this client has connected. Pass them this client'd id
+    socket.broadcast.emit('clientConnect', {
+        id: clientId
+    })
+
+    //Notify this client of all of the other clients that have already connected
+    clients.forEach(function(currentId) {
+        //Dont spawn this client again
+        if(currentId == clientId) return
+        
+        socket.emit('clientConnect', {
+            id: currentId
+        })
+    })
+
+
+
     //Called when this client has connected to the server
     socket.on('connected', function () {
         //console.log('Client connected')

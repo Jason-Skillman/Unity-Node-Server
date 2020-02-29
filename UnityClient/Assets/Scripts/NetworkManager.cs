@@ -16,6 +16,11 @@ public class NetworkManager : MonoBehaviour {
     //This client's player game object
     private GameObject clientPlayer;
 
+    //All clients connected
+    private Dictionary<string, GameObject> clients;
+
+    private bool flagConnectedOnce;
+
 
     public bool HasConnected {
         get;
@@ -30,12 +35,13 @@ public class NetworkManager : MonoBehaviour {
         if(INSTANCE == null) INSTANCE = this;
 
         socket = GetComponent<SocketIOComponent>();
+        clients = new Dictionary<string, GameObject>();
     }
 
     void Start() {
         socket.On("open", OnConnect);
         socket.On("connectInitialize", OnConnectInitialize);
-        //socket.On("clientConnected", OnClientConnected);
+        socket.On("clientConnect", OnClientConnect);
     }
 
     /// <summary>
@@ -44,6 +50,10 @@ public class NetworkManager : MonoBehaviour {
     /// </summary>
     /// <param name="obj"></param>
     private void OnConnect(SocketIOEvent obj) {
+        //Prevent the client from connecting more then once
+        if(flagConnectedOnce) return;
+        flagConnectedOnce = true;
+
         Debug.Log("Client connected to server");
 
         //Tell the server that we have connected
@@ -63,12 +73,14 @@ public class NetworkManager : MonoBehaviour {
     /// Called when another client has connected to the server
     /// </summary>
     /// <param name="obj"></param>
-    private void OnClientConnected(SocketIOEvent obj) {
-        /*GameObject player = Instantiate(playerPrefab);
-        players.Add(obj.data["id"].ToString(), player);
+    private void OnClientConnect(SocketIOEvent obj) {
+        //Create the other client's game object and fetch their id
+        GameObject otherClient = Instantiate(otherClientPrefab);
+        otherClient.transform.position = playerSpawnPos.position;
+        string id = obj.data["id"].ToString();
+        clients.Add(id, otherClient);
 
-        //Debug.Log("Player id: " + obj.data["id"]);
-        Debug.Log("Current player count: " + players.Count);*/
+        Debug.Log("Client " + id + " has connected");
     }
 
     /// <summary>
