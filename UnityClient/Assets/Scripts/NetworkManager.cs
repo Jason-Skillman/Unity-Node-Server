@@ -42,6 +42,7 @@ public class NetworkManager : MonoBehaviour {
         socket.On("open", OnConnect);
         socket.On("connectInitialize", OnConnectInitialize);
         socket.On("clientConnect", OnClientConnect);
+        socket.On("move", OnClientMove);
     }
 
     /// <summary>
@@ -84,6 +85,22 @@ public class NetworkManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// Called when another client has moved
+    /// </summary>
+    /// <param name="obj"></param>
+    private void OnClientMove(SocketIOEvent obj) {
+        Debug.Log("Network player is moving " + obj.data);
+
+        string id = obj.data["id"].ToString();
+        //Debug.Log("Player Id moving: " + id);
+
+        GameObject player = clients[id];
+        //Vector3 pos = new Vector3(GetFloatFromJson(obj.data, "x"), 0, GetFloatFromJson(obj.data, "z"));
+        //NaviagatePos navigatePos = player.GetComponent<NaviagatePos>();
+        //navigatePos.NavigateTo(pos);
+    }
+
+    /// <summary>
     /// Returns the singleton instance
     /// </summary>
     /// <returns></returns>
@@ -104,6 +121,19 @@ public class NetworkManager : MonoBehaviour {
 
         HasConnected = true;
         socket.Connect();
+    }
+
+    /// <summary>
+    /// Moves the player on the server
+    /// </summary>
+    /// <param name="pos">The new position of the player</param>
+    public void MovePlayer(Vector3 pos) {
+        socket.Emit("move", VectorToJson(pos));
+    }
+
+
+    public static JSONObject VectorToJson(Vector3 vector) {
+        return new JSONObject(string.Format(@"{{""x"":""{0}"",""y"":""{1}"",""z"":""{2}""}}", vector.x, vector.y, vector.z));
     }
 
 }

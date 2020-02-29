@@ -41,6 +41,13 @@ io.on('connection', function(socket) {
         console.log('Client disconnected')
         clients.pop(clientId)
     })
+
+    //Called when any ...
+    socket.on('move', function(data) {
+        console.log('Player is moving', JSON.stringify(data))
+        data.id = clientId;
+        socket.broadcast.emit('move', data)
+    })
 })
 
 //Prints out all of the clients currently connected to the server
