@@ -43,6 +43,7 @@ public class NetworkManager : MonoBehaviour {
         socket.On("open", OnConnect);
         socket.On("connectInitialize", OnConnectInitialize);
         socket.On("clientConnect", OnClientConnect);
+        socket.On("clientDisconnect", OnClientDisconnect);
         //socket.On("move", OnClientMove);
     }
 
@@ -87,6 +88,18 @@ public class NetworkManager : MonoBehaviour {
         clients.Add(id, otherClient);
 
         Debug.Log("Client " + id + " has connected");
+    }
+
+    /// <summary>
+    /// Called when another client has disconnected from the server
+    /// </summary>
+    /// <param name="obj"></param>
+    private void OnClientDisconnect(SocketIOEvent obj) {
+        string id = obj.data["id"].ToString();
+        GameObject otherClient = clients[id];
+
+        clients.Remove(id);
+        Destroy(otherClient);
     }
 
     /// <summary>

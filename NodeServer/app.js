@@ -40,6 +40,9 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function() {
         console.log('Client disconnected')
         clients.pop(clientId)
+        socket.broadcast.emit('clientDisconnect', {
+            id: clientId
+        })
     })
 
     //Called when any client moves on the server
