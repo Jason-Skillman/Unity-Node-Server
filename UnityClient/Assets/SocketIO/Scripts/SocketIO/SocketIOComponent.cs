@@ -396,13 +396,14 @@ namespace SocketIO
 		{
 			if (!handlers.ContainsKey(ev.name)) { return; }
 			foreach (Action<SocketIOEvent> handler in this.handlers[ev.name]) {
-				try{
+				/*try{
 					handler(ev);
 				} catch(Exception ex){
 					#if SOCKET_IO_DEBUG
 					debugMethod.Invoke(ex.ToString());
 					#endif
-				}
+				}*/
+				handler(ev);
 			}
 		}
 
