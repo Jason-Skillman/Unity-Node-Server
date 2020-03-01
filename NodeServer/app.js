@@ -13,27 +13,25 @@ io.on('connection', function(socket) {
 
 
 
-    //Notify all other clients that this client has connected. Pass them this client'd id
-    socket.broadcast.emit('clientConnect', {
-        id: clientId
-    })
-
-    //Notify this client of all of the other clients that have already connected
-    clients.forEach(function(currentId) {
-        //Dont spawn this client again
-        if(currentId == clientId) return
-        
-        socket.emit('clientConnect', {
-            id: currentId
-        })
-    })
-
-
-
-    //Called when this client has connected to the server
+    //Called when this client has successfully connected to the server
     socket.on('connected', function () {
         //console.log('Client connected')
         socket.emit('connectInitialize')
+
+        //Notify all other clients that this client has connected. Pass them this client'd id
+        socket.broadcast.emit('clientConnect', {
+            id: clientId
+        })
+
+        //Notify this client of all of the other clients that have already connected
+        clients.forEach(function(currentId) {
+            //Dont spawn this client again
+            if(currentId == clientId) return
+            
+            socket.emit('clientConnect', {
+                id: currentId
+            })
+        })
     })
 
     //Called when this client has disconnected from the server
@@ -45,12 +43,19 @@ io.on('connection', function(socket) {
         })
     })
 
+    //Called when this client needs to update another clients position
+    socket.on('updatePosition', function(data) {
+        data.id = clientId
+        socket.broadcast.emit('clientSetPosition', data)
+    })
+
     //Called when any client moves on the server
-    socket.on('move', function(data) {
+    /*socket.on('move', function(data) {
         console.log('Player is moving', JSON.stringify(data))
         data.id = clientId;
         socket.broadcast.emit('move', data)
-    })
+    })*/
+
 })
 
 //Prints out all of the clients currently connected to the server
