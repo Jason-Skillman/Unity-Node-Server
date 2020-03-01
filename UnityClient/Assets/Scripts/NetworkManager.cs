@@ -17,15 +17,18 @@ public class NetworkManager : MonoBehaviour {
     private Dictionary<string, GameObject> clients;
     private bool flagConnectedOnce;
 
+    //This clients id
+    public string ClientId {
+        get; private set;
+    }
+
     //This client's player game object
     public GameObject ClientPlayer {
-        get;
-        private set;
+        get; private set;
     }
 
     public bool HasConnected {
-        get;
-        private set;
+        get; private set;
     }
 
     public int ClientsConnected {
@@ -80,13 +83,19 @@ public class NetworkManager : MonoBehaviour {
     /// </summary>
     /// <param name="obj"></param>
     private void OnConnectInitialize(SocketIOEvent obj) {
-        //Fetch the generated id for this client from the server
+        //Fetch this client's id from the server
         string id = obj.data["id"].ToString();
+        ClientId = id;
 
-        //Spawn in the local player
+        //Spawn in the local game object
         ClientPlayer = Instantiate(clientPrefab);
         ClientPlayer.transform.position = playerSpawnPos.position;
         clients.Add(id, ClientPlayer);
+
+        //Setup the main player
+        Player player = ClientPlayer.GetComponent<Player>();
+        player.IsMainPlayer = true;
+        player.Id = id;
     }
 
     /// <summary>
@@ -94,13 +103,17 @@ public class NetworkManager : MonoBehaviour {
     /// </summary>
     /// <param name="obj"></param>
     private void OnClientConnect(SocketIOEvent obj) {
-        //Create the other client's game object
+        //Fetch the other client's id from the server
+        string id = obj.data["id"].ToString();
+
+        //Spawn in the other client's game object
         GameObject otherClient = Instantiate(otherClientPrefab);
         otherClient.transform.position = playerSpawnPos.position;
-        //Fetch their id from the server
-        string id = obj.data["id"].ToString();
-        //Add client and id to the dictionary
         clients.Add(id, otherClient);
+
+        //Setup the other client's player
+        Player player = otherClient.GetComponent<Player>();
+        player.Id = id;
 
         //Update all client's position of the local player. Sends the local player's position to the server
         socket.Emit("setPosition", VectorToJson(ClientPlayer.transform.position));

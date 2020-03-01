@@ -15,12 +15,13 @@ io.on('connection', function(socket) {
 
     //Called when this client has successfully connected to the server
     socket.on('connect', function () {
-        //console.log('Client connected')
+        
+        //Notify this client to initialize
         socket.emit('connectInitialize', {
             id: clientId
         })
 
-        //Notify all other clients that this client has connected. Pass them this client'd id
+        //Notify all other clients that this client has connected. Pass them this client's id
         socket.broadcast.emit('clientConnect', {
             id: clientId
         })
@@ -34,6 +35,8 @@ io.on('connection', function(socket) {
                 id: currentId
             })
         })
+
+        clientCount()
     })
 
     //Called when this client has disconnected from the server. 'disconnect' is a keyword
@@ -44,6 +47,8 @@ io.on('connection', function(socket) {
         socket.broadcast.emit('clientDisconnect', {
             id: clientId
         })
+
+        clientCount()
     })
 
     //Called when this client needs to update another clients position
