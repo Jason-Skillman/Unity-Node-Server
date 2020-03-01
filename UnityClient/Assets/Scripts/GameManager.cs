@@ -18,16 +18,16 @@ public class GameManager : MonoBehaviour {
 
                 if(gameObjectHit.CompareTag("Walkable")) {
                     Vector3 hitPos = hit.point;
+
+                    //Move the player on the local client
                     GameObject clientPlayer = NetworkManager.GetInstance().ClientPlayer;
                     Player player = clientPlayer.GetComponent<Player>();
-
                     player.MoveTo(hitPos);
+
+                    //Move the player on the server
+                    NetworkManager.GetInstance().MovePlayer(hitPos);
                 }
             }
-        }
-        if(Input.GetKeyDown(KeyCode.Space)) {
-            //Debug.Log("Space");
-            //NetworkManager.GetInstance().StartServer();
         }
     }
 

@@ -37,6 +37,7 @@ io.on('connection', function(socket) {
     //Called when this client has disconnected from the server. 'disconnect' is a keyword
     socket.on('disconnect', function() {
         console.log('Client disconnected')
+
         clients.pop(clientId)
         socket.broadcast.emit('clientDisconnect', {
             id: clientId
@@ -50,11 +51,12 @@ io.on('connection', function(socket) {
     })
 
     //Called when any client moves on the server
-    /*socket.on('move', function(data) {
-        console.log('Player is moving', JSON.stringify(data))
+    socket.on('move', function(data) {
+        console.log('Player ' + clientId + ' is moving', JSON.stringify(data))
+
         data.id = clientId;
-        socket.broadcast.emit('move', data)
-    })*/
+        socket.broadcast.emit('clientMove', data)
+    })
 
 })
 

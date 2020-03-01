@@ -46,7 +46,7 @@ public class NetworkManager : MonoBehaviour {
         socket.On("clientConnect", OnClientConnect);
         socket.On("clientDisconnect", OnClientDisconnect);
         socket.On("clientSetPosition", OnClientSetPosition);
-        //socket.On("move", OnClientMove);
+        socket.On("clientMove", OnClientMove);
     }
 
     void OnDestroy() {
@@ -131,16 +131,21 @@ public class NetworkManager : MonoBehaviour {
     /// Called when another client has moved
     /// </summary>
     /// <param name="obj"></param>
-    /*private void OnClientMove(SocketIOEvent obj) {
+    private void OnClientMove(SocketIOEvent obj) {
+        //Find the other clients game object
         string id = obj.data["id"].ToString();
-        Debug.Log("Player " + id + " is moving");
+        GameObject otherClient = clients[id];
 
-        //Get the game object of the moving player
-        GameObject gameObjectPlayer = clients[id];
-        Player player = gameObjectPlayer.GetComponent<Player>();
+        //Fetch the positon to move to
+        Vector3 pos = JsonToVector3(obj.data);
+        pos.y = 0;
 
-        player.MoveTo(JsonToVector3(obj.data));
-    }*/
+        //Move the other client's player
+        Player player = otherClient.GetComponent<Player>();
+        player.MoveTo(pos);
+
+        //Debug.Log("Player " + id + " is moving");
+    }
 
     /// <summary>
     /// Returns the singleton instance
@@ -199,7 +204,7 @@ public class NetworkManager : MonoBehaviour {
         float x = float.Parse(json["x"].ToString().Replace("\"", ""));
         float y = float.Parse(json["y"].ToString().Replace("\"", ""));
         float z = float.Parse(json["z"].ToString().Replace("\"", ""));
-        return new Vector3(x, 0, z);
+        return new Vector3(x, y, z);
     }
 
 }

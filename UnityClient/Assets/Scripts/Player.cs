@@ -18,7 +18,6 @@ public class Player : MonoBehaviour {
 
     public void MoveTo(Vector3 pos) {
         agent.SetDestination(pos);
-        NetworkManager.GetInstance().MovePlayer(pos);
     }
 
 }
