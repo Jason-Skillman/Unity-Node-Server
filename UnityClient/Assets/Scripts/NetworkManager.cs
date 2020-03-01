@@ -66,7 +66,7 @@ public class NetworkManager : MonoBehaviour {
         Debug.Log("Client connected to server");
 
         //Tell the server that we have connected
-        socket.Emit("connected");
+        socket.Emit("connect");
     }
 
     /// <summary>
@@ -74,6 +74,7 @@ public class NetworkManager : MonoBehaviour {
     /// </summary>
     /// <param name="obj"></param>
     private void OnConnectInitialize(SocketIOEvent obj) {
+        //Spawn in the local player
         ClientPlayer = Instantiate(clientPrefab);
         ClientPlayer.transform.position = playerSpawnPos.position;
     }
@@ -83,16 +84,16 @@ public class NetworkManager : MonoBehaviour {
     /// </summary>
     /// <param name="obj"></param>
     private void OnClientConnect(SocketIOEvent obj) {
-        //Create the other client's game object and fetch their id
+        //Create the other client's game object
         GameObject otherClient = Instantiate(otherClientPrefab);
         otherClient.transform.position = playerSpawnPos.position;
+        //Fetch their id from the server
         string id = obj.data["id"].ToString();
+        //Add client and id to the dictionary
         clients.Add(id, otherClient);
 
         //Update all client's position of the local player. Sends the local player's position to the server
-        if(socket == null) Debug.Log("socket null");
-        if(ClientPlayer == null) Debug.Log("ClientPlayer null");
-        socket.Emit("updatePosition", VectorToJson(ClientPlayer.transform.position));
+        socket.Emit("setPosition", VectorToJson(ClientPlayer.transform.position));
 
         Debug.Log("Client " + id + " has connected");
     }
@@ -102,9 +103,11 @@ public class NetworkManager : MonoBehaviour {
     /// </summary>
     /// <param name="obj"></param>
     private void OnClientDisconnect(SocketIOEvent obj) {
+        //Find the other clients game object
         string id = obj.data["id"].ToString();
         GameObject otherClient = clients[id];
 
+        //Remove the other client's game object from this client
         clients.Remove(id);
         Destroy(otherClient);
     }
@@ -114,15 +117,14 @@ public class NetworkManager : MonoBehaviour {
     /// </summary>
     /// <param name="obj"></param>
     private void OnClientSetPosition(SocketIOEvent obj) {
-        Debug.Log("clientSetPosition");
         //Find the other clients game object
         string id = obj.data["id"].ToString();
-        GameObject player = clients[id];
+        GameObject otherClient = clients[id];
 
         //Get the vector3 data from the server
         Vector3 pos = JsonToVector3(obj.data);
         pos.y = 0;
-        player.transform.position = pos;
+        otherClient.transform.position = pos;
     }
 
     /// <summary>
@@ -180,7 +182,7 @@ public class NetworkManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Converts a vector3 position to json
+    /// Converts a vector3 position to a json object
     /// </summary>
     /// <param name="vector">The position to convert</param>
     /// <returns>The json object</returns>
@@ -188,6 +190,11 @@ public class NetworkManager : MonoBehaviour {
         return new JSONObject(string.Format(@"{{""x"":""{0}"",""y"":""{1}"",""z"":""{2}""}}", vector.x, vector.y, vector.z));
     }
 
+    /// <summary>
+    /// Converts a json object to a position
+    /// </summary>
+    /// <param name="json">The json data to convert</param>
+    /// <returns>The position</returns>
     public static Vector3 JsonToVector3(JSONObject json) {
         float x = float.Parse(json["x"].ToString().Replace("\"", ""));
         float y = float.Parse(json["y"].ToString().Replace("\"", ""));

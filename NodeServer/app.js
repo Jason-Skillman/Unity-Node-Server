@@ -3,7 +3,7 @@ var shortid = require('shortid')
 
 var clients = []
 
-//Called when a new client has connected
+//Called when a new client has connected. 'connection' is a keyword
 io.on('connection', function(socket) {
     console.log('Client connected')
 
@@ -14,7 +14,7 @@ io.on('connection', function(socket) {
 
 
     //Called when this client has successfully connected to the server
-    socket.on('connected', function () {
+    socket.on('connect', function () {
         //console.log('Client connected')
         socket.emit('connectInitialize')
 
@@ -34,7 +34,7 @@ io.on('connection', function(socket) {
         })
     })
 
-    //Called when this client has disconnected from the server
+    //Called when this client has disconnected from the server. 'disconnect' is a keyword
     socket.on('disconnect', function() {
         console.log('Client disconnected')
         clients.pop(clientId)
@@ -44,7 +44,7 @@ io.on('connection', function(socket) {
     })
 
     //Called when this client needs to update another clients position
-    socket.on('updatePosition', function(data) {
+    socket.on('setPosition', function(data) {
         data.id = clientId
         socket.broadcast.emit('clientSetPosition', data)
     })
