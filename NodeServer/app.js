@@ -36,19 +36,26 @@ io.on('connection', function(socket) {
             })
         })
 
-        clientCount()
+        //clientCount()
     })
 
     //Called when this client has disconnected from the server. 'disconnect' is a keyword
     socket.on('disconnect', function() {
         console.log('Client disconnected')
 
-        clients.pop(clientId)
+        //Remove the current client from the list of connected clients
+        for(var i = 0; i < clients.length; i++) { 
+            if(clients[i] === clientId) {
+                var temp = clients.splice(i, 1)
+                break
+            }
+        }
+
         socket.broadcast.emit('clientDisconnect', {
             id: clientId
         })
 
-        clientCount()
+        //clientCount()
     })
 
     //Called when this client needs to update another clients position
@@ -59,10 +66,10 @@ io.on('connection', function(socket) {
 
     //Called when any client moves on the server
     socket.on('move', function(data) {
-        console.log('Player ' + clientId + ' is moving', JSON.stringify(data))
-
         data.id = clientId;
         socket.broadcast.emit('clientMove', data)
+        
+        //console.log('Player ' + clientId + ' is moving', JSON.stringify(data))
     })
 
 })
