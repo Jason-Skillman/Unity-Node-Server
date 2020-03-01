@@ -16,7 +16,9 @@ io.on('connection', function(socket) {
     //Called when this client has successfully connected to the server
     socket.on('connect', function () {
         //console.log('Client connected')
-        socket.emit('connectInitialize')
+        socket.emit('connectInitialize', {
+            id: clientId
+        })
 
         //Notify all other clients that this client has connected. Pass them this client'd id
         socket.broadcast.emit('clientConnect', {

@@ -28,6 +28,12 @@ public class NetworkManager : MonoBehaviour {
         private set;
     }
 
+    public int ClientsConnected {
+        get {
+            return clients.Count;
+        }
+    }
+
 
     private NetworkManager() { }
 
@@ -74,9 +80,13 @@ public class NetworkManager : MonoBehaviour {
     /// </summary>
     /// <param name="obj"></param>
     private void OnConnectInitialize(SocketIOEvent obj) {
+        //Fetch the generated id for this client from the server
+        string id = obj.data["id"].ToString();
+
         //Spawn in the local player
         ClientPlayer = Instantiate(clientPrefab);
         ClientPlayer.transform.position = playerSpawnPos.position;
+        clients.Add(id, ClientPlayer);
     }
 
     /// <summary>
